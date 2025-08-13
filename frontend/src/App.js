@@ -283,7 +283,7 @@ const AuthPage = () => {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
-                type="email"
+                type={isLogin && formData.email === 'admin' ? 'text' : 'email'}
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 required
