@@ -1,0 +1,197 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------< com.jobplatform:job-platform-api >------------------
+[INFO] Building job-platform-api 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.1:run (default-cli) > test-compile @ job-platform-api >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ job-platform-api ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ job-platform-api ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ job-platform-api ---
+[INFO] skip non existing resourceDirectory /app/springboot-backend/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ job-platform-api ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:3.2.1:run (default-cli) < test-compile @ job-platform-api <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.1:run (default-cli) @ job-platform-api ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2025-08-13T04:45:42.275Z  INFO 3835 --- [           main] com.jobplatform.JobPlatformApplication   : Starting JobPlatformApplication using Java 17.0.16 with PID 3835 (/app/springboot-backend/target/classes started by root in /app/springboot-backend)
+2025-08-13T04:45:42.277Z DEBUG 3835 --- [           main] com.jobplatform.JobPlatformApplication   : Running with Spring Boot v3.2.1, Spring v6.1.2
+2025-08-13T04:45:42.278Z  INFO 3835 --- [           main] com.jobplatform.JobPlatformApplication   : No active profile set, falling back to 1 default profile: "default"
+2025-08-13T04:45:43.394Z  INFO 3835 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-13T04:45:43.468Z  INFO 3835 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 67 ms. Found 3 JPA repository interfaces.
+2025-08-13T04:45:44.198Z  INFO 3835 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8002 (http)
+2025-08-13T04:45:44.207Z  INFO 3835 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-13T04:45:44.208Z  INFO 3835 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.17]
+2025-08-13T04:45:44.382Z  INFO 3835 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-08-13T04:45:44.384Z  INFO 3835 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2041 ms
+2025-08-13T04:45:44.439Z  INFO 3835 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-08-13T04:45:44.612Z  INFO 3835 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:jobplatform user=SA
+2025-08-13T04:45:44.613Z  INFO 3835 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-08-13T04:45:44.624Z  INFO 3835 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:jobplatform'
+2025-08-13T04:45:44.861Z DEBUG 3835 --- [           main] c.j.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2025-08-13T04:45:44.955Z  INFO 3835 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-13T04:45:44.997Z  INFO 3835 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
+2025-08-13T04:45:45.035Z  INFO 3835 --- [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-08-13T04:45:45.273Z  INFO 3835 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-13T04:45:45.310Z  WARN 3835 --- [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-13T04:45:46.439Z  INFO 3835 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: 
+    drop table if exists applications cascade 
+Hibernate: 
+    drop table if exists job_skills cascade 
+Hibernate: 
+    drop table if exists jobs cascade 
+Hibernate: 
+    drop table if exists users cascade 
+Hibernate: 
+    create table applications (
+        created_at timestamp(6),
+        applicant_id varchar(255) not null,
+        application_id varchar(255) not null,
+        cover_letter TEXT,
+        email varchar(255) not null,
+        full_name varchar(255) not null,
+        job_id varchar(255) not null,
+        phone varchar(255) not null,
+        resume_filename varchar(255),
+        status varchar(255) not null,
+        primary key (application_id)
+    )
+Hibernate: 
+    create table job_skills (
+        job_id varchar(255) not null,
+        skill varchar(255)
+    )
+Hibernate: 
+    create table jobs (
+        created_at timestamp(6),
+        application_deadline varchar(255) not null,
+        company varchar(255) not null,
+        description TEXT,
+        employer_id varchar(255) not null,
+        job_id varchar(255) not null,
+        location varchar(255) not null,
+        requirements TEXT,
+        salary_range varchar(255),
+        title varchar(255) not null,
+        primary key (job_id)
+    )
+Hibernate: 
+    create table users (
+        created_at timestamp(6),
+        company varchar(255),
+        email varchar(255) not null unique,
+        full_name varchar(255) not null,
+        password varchar(255) not null,
+        role varchar(255) not null,
+        user_id varchar(255) not null,
+        primary key (user_id)
+    )
+Hibernate: 
+    alter table if exists job_skills 
+       add constraint FK1gb74tysr9vkypwivvvovxq1f 
+       foreign key (job_id) 
+       references jobs
+2025-08-13T04:45:46.491Z  INFO 3835 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13T04:45:46.938Z  INFO 3835 --- [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-13T04:45:47.753Z  WARN 3835 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-13T04:45:47.777Z  WARN 3835 --- [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 245d67f5-fb73-4a6b-98ea-4c8fcb507f33
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2025-08-13T04:45:48.173Z  INFO 3835 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2fcd0756, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@285d33f3, org.springframework.security.web.context.SecurityContextHolderFilter@16d52e51, org.springframework.security.web.header.HeaderWriterFilter@48c6107a, org.springframework.web.filter.CorsFilter@5b6fd32d, org.springframework.security.web.authentication.logout.LogoutFilter@1c537671, com.jobplatform.security.JwtAuthenticationFilter@260e3837, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@2f643a10, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@ec28717, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@425436b4, org.springframework.security.web.session.SessionManagementFilter@6d5934f6, org.springframework.security.web.access.ExceptionTranslationFilter@6f2df0b3, org.springframework.security.web.access.intercept.AuthorizationFilter@20a4f67a]
+2025-08-13T04:45:48.610Z  INFO 3835 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8002 (http) with context path ''
+2025-08-13T04:45:48.636Z  INFO 3835 --- [           main] com.jobplatform.JobPlatformApplication   : Started JobPlatformApplication in 6.853 seconds (process running for 7.466)
+Hibernate: 
+    select
+        u1_0.user_id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.company,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.password,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (company, created_at, email, full_name, password, role, user_id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+Admin user created
+2025-08-13T04:45:55.110Z  INFO 3835 --- [nio-8002-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-08-13T04:45:55.111Z  INFO 3835 --- [nio-8002-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-08-13T04:45:55.112Z  INFO 3835 --- [nio-8002-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-08-13T04:45:55.128Z DEBUG 3835 --- [nio-8002-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/test
+2025-08-13T04:45:55.135Z DEBUG 3835 --- [nio-8002-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2025-08-13T04:45:55.137Z DEBUG 3835 --- [nio-8002-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/auth/test
+2025-08-13T04:45:55.149Z  INFO 3835 --- [nio-8002-exec-1] c.jobplatform.controller.AuthController  : Test endpoint called
+2025-08-13T04:46:00.208Z DEBUG 3835 --- [nio-8002-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /api/auth/register
+2025-08-13T04:46:00.208Z DEBUG 3835 --- [nio-8002-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2025-08-13T04:46:00.208Z DEBUG 3835 --- [nio-8002-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /api/auth/register
+2025-08-13T04:46:00.272Z  INFO 3835 --- [nio-8002-exec-2] c.jobplatform.controller.AuthController  : Registration request received for email: newuser@test.com
+Hibernate: 
+    select
+        u1_0.user_id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    fetch
+        first ? rows only
+Hibernate: 
+    select
+        u1_0.user_id,
+        u1_0.company,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.full_name,
+        u1_0.password,
+        u1_0.role 
+    from
+        users u1_0 
+    where
+        u1_0.user_id=?
+Hibernate: 
+    insert 
+    into
+        users
+        (company, created_at, email, full_name, password, role, user_id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?)
+2025-08-13T04:46:00.402Z  INFO 3835 --- [nio-8002-exec-2] c.jobplatform.controller.AuthController  : User created successfully: newuser@test.com
