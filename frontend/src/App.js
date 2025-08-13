@@ -1090,7 +1090,38 @@ const App = () => {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/jobs/:id" element={<JobDetailPage />} />
-            {/* Add other routes here */}
+            <Route 
+              path="/jobs/:id/apply" 
+              element={
+                <ProtectedRoute allowedRoles={['jobseeker']}>
+                  <JobApplyPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/jobseeker/applications" 
+              element={
+                <ProtectedRoute allowedRoles={['jobseeker']}>
+                  <JobSeekerApplicationsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employer/dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['employer']}>
+                  <EmployerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/employer/post-job" 
+              element={
+                <ProtectedRoute allowedRoles={['employer']}>
+                  <PostJobPage />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </div>
       </Router>
