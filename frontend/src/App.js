@@ -1076,8 +1076,232 @@ const PostJobPage = () => {
   );
 };
 
-// More components would go here...
-// For brevity, I'll add the main App component
+// Admin Dashboard
+const AdminDashboard = () => {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAllJobs();
+  }, []);
+
+  const fetchAllJobs = async () => {
+    try {
+      const response = await axios.get('/api/admin/jobs');
+      setJobs(response.data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteJob = async (jobId) => {
+    if (!window.confirm('Are you sure you want to delete this job?')) return;
+
+    try {
+      await axios.delete(`/api/admin/jobs/${jobId}`);
+      setJobs(jobs.filter(job => job.job_id !== jobId));
+      alert('Job deleted successfully');
+    } catch (error) {
+      alert('Failed to delete job');
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+    </div>;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
+      
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold mb-4">All Jobs ({jobs.length})</h2>
+      </div>
+
+      {jobs.length === 0 ? (
+        <Card className="p-8 text-center">
+          <p className="text-gray-500">No jobs found.</p>
+        </Card>
+      ) : (
+        <div className="grid gap-6">
+          {jobs.map((job) => (
+            <Card key={job.job_id} className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{job.title}</h3>
+                  <div className="flex items-center text-gray-600 space-x-4 mb-2">
+                    <span className="flex items-center">
+                      <Building2 className="h-4 w-4 mr-1" />
+                      {job.company}
+                    </span>
+                    <span className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      {job.location}
+                    </span>
+                  </div>
+                  <p className="text-gray-700 line-clamp-2">{job.description}</p>
+                </div>
+                
+                <div className="flex gap-2 ml-4">
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Job</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure? This will permanently delete the job and all applications.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteJob(job.job_id)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Job Applications Management Page
+const JobApplicationsPage = () => {
+  const { id } = useParams();
+  const [applications, setApplications] = useState([]);
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [id]);
+
+  const fetchApplications = async () => {
+    try {
+      const [jobResponse, applicationsResponse] = await Promise.all([
+        axios.get(`/api/jobs/${id}`),
+        axios.get(`/api/employer/jobs/${id}/applications`)
+      ]);
+      
+      setJob(jobResponse.data);
+      setApplications(applicationsResponse.data);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateApplicationStatus = async (applicationId, status) => {
+    try {
+      await axios.put(`/api/employer/applications/${applicationId}/status`, { status });
+      setApplications(applications.map(app => 
+        app.application_id === applicationId ? { ...app, status } : app
+      ));
+      alert(`Application ${status} successfully`);
+    } catch (error) {
+      alert('Failed to update application status');
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'waitlisted': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-blue-100 text-blue-800';
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+    </div>;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Applications</h1>
+        {job && <p className="text-gray-600">For: {job.title} at {job.company}</p>}
+      </div>
+
+      {applications.length === 0 ? (
+        <Card className="p-8 text-center">
+          <p className="text-gray-500">No applications received yet.</p>
+        </Card>
+      ) : (
+        <div className="grid gap-6">
+          {applications.map((application) => (
+            <Card key={application.application_id} className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {application.full_name}
+                  </h3>
+                  <div className="text-gray-600 space-y-1 mb-4">
+                    <p>Email: {application.email}</p>
+                    <p>Phone: {application.phone}</p>
+                    <p>Applied: {new Date(application.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div className="mb-4">
+                    <h4 className="font-semibold mb-2">Cover Letter:</h4>
+                    <p className="text-gray-700">{application.cover_letter}</p>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col gap-2 ml-4">
+                  <Badge className={`${getStatusColor(application.status)} capitalize mb-2`}>
+                    {application.status}
+                  </Badge>
+                  
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      onClick={() => updateApplicationStatus(application.application_id, 'approved')}
+                      disabled={application.status === 'approved'}
+                    >
+                      Approve
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => updateApplicationStatus(application.application_id, 'waitlisted')}
+                      disabled={application.status === 'waitlisted'}
+                    >
+                      Waitlist
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => updateApplicationStatus(application.application_id, 'rejected')}
+                      disabled={application.status === 'rejected'}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const App = () => {
   return (
