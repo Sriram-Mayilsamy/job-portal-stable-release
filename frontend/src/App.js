@@ -1346,6 +1346,22 @@ const App = () => {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/employer/jobs/:id/applications" 
+              element={
+                <ProtectedRoute allowedRoles={['employer']}>
+                  <JobApplicationsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </div>
       </Router>
