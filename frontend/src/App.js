@@ -583,6 +583,499 @@ const JobDetailPage = () => {
   );
 };
 
+// Job Apply Page
+const JobApplyPage = () => {
+  const { id } = useParams();
+  const [job, setJob] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone: '',
+    cover_letter: '',
+    resume: null
+  });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user || user.role !== 'jobseeker') {
+      navigate('/auth');
+      return;
+    }
+    fetchJob();
+  }, [id, user, navigate]);
+
+  const fetchJob = async () => {
+    try {
+      const response = await axios.get(`/api/jobs/${id}`);
+      setJob(response.data);
+      // Pre-fill user data
+      setFormData(prev => ({
+        ...prev,
+        full_name: user.full_name,
+        email: user.email
+      }));
+    } catch (error) {
+      console.error('Error fetching job:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('full_name', formData.full_name);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('cover_letter', formData.cover_letter);
+      formDataToSend.append('resume', formData.resume);
+
+      await axios.post(`/api/jobs/${id}/apply`, formDataToSend, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      alert('Application submitted successfully!');
+      navigate('/jobseeker/applications');
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Failed to submit application');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+    </div>;
+  }
+
+  if (!job) {
+    return <div className="max-w-4xl mx-auto px-4 py-8">
+      <Card className="p-8 text-center">
+        <p className="text-gray-500">Job not found.</p>
+      </Card>
+    </div>;
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <Card className="p-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Apply for {job.title}</h1>
+          <p className="text-gray-600">at {job.company}</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="full_name">Full Name</Label>
+              <Input
+                id="full_name"
+                value={formData.full_name}
+                onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => setFormData({...formData, phone: e.target.value})}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="resume">Resume (PDF/DOC)</Label>
+            <Input
+              id="resume"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => setFormData({...formData, resume: e.target.files[0]})}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="cover_letter">Cover Letter</Label>
+            <Textarea
+              id="cover_letter"
+              rows={6}
+              placeholder="Tell us why you're perfect for this role..."
+              value={formData.cover_letter}
+              onChange={(e) => setFormData({...formData, cover_letter: e.target.value})}
+              required
+            />
+          </div>
+
+          <div className="flex gap-4">
+            <Button type="submit" disabled={submitting} size="lg">
+              {submitting ? 'Submitting...' : 'Submit Application'}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => navigate(`/jobs/${id}`)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
+// JobSeeker Applications Page
+const JobSeekerApplicationsPage = () => {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const fetchApplications = async () => {
+    try {
+      const response = await axios.get('/api/jobseeker/applications');
+      setApplications(response.data);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'waitlisted': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-blue-100 text-blue-800';
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+    </div>;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">My Applications</h1>
+
+      {applications.length === 0 ? (
+        <Card className="p-8 text-center">
+          <p className="text-gray-500 mb-4">You haven't applied to any jobs yet.</p>
+          <Button onClick={() => window.location.href = '/jobs'}>
+            Browse Jobs
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid gap-6">
+          {applications.map((application) => (
+            <Card key={application.application_id} className="p-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {application.job_title}
+                  </h3>
+                  <p className="text-gray-600 mb-2">{application.job_company}</p>
+                  <p className="text-sm text-gray-500">
+                    Applied on {new Date(application.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <Badge className={`${getStatusColor(application.status)} capitalize`}>
+                  {application.status}
+                </Badge>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Employer Dashboard
+const EmployerDashboard = () => {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      const response = await axios.get('/api/employer/jobs');
+      setJobs(response.data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteJob = async (jobId) => {
+    if (!window.confirm('Are you sure you want to delete this job?')) return;
+
+    try {
+      await axios.delete(`/api/employer/jobs/${jobId}`);
+      setJobs(jobs.filter(job => job.job_id !== jobId));
+      alert('Job deleted successfully');
+    } catch (error) {
+      alert('Failed to delete job');
+    }
+  };
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+    </div>;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">My Jobs</h1>
+        <Button onClick={() => window.location.href = '/employer/post-job'}>
+          <Plus className="h-4 w-4 mr-2" />
+          Post New Job
+        </Button>
+      </div>
+
+      {jobs.length === 0 ? (
+        <Card className="p-8 text-center">
+          <p className="text-gray-500 mb-4">You haven't posted any jobs yet.</p>
+          <Button onClick={() => window.location.href = '/employer/post-job'}>
+            Post Your First Job
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid gap-6">
+          {jobs.map((job) => (
+            <Card key={job.job_id} className="p-6">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{job.title}</h3>
+                  <div className="flex items-center text-gray-600 space-x-4 mb-2">
+                    <span className="flex items-center">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      {job.location}
+                    </span>
+                    <span className="flex items-center">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      {new Date(job.application_deadline).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-gray-700 line-clamp-2">{job.description}</p>
+                </div>
+                
+                <div className="flex gap-2 ml-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.location.href = `/employer/jobs/${job.job_id}/applications`}
+                  >
+                    <Users className="h-4 w-4 mr-1" />
+                    Applications
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => window.location.href = `/employer/edit-job/${job.job_id}`}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Job</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure? This will permanently delete the job and all applications.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => deleteJob(job.job_id)}>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Post Job Page
+const PostJobPage = () => {
+  const [formData, setFormData] = useState({
+    title: '',
+    company: '',
+    location: '',
+    description: '',
+    requirements: '',
+    salary_range: '',
+    skills: '',
+    application_deadline: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const jobData = {
+        ...formData,
+        skills: formData.skills.split(',').map(s => s.trim()).filter(s => s)
+      };
+
+      await axios.post('/api/employer/jobs', jobData);
+      alert('Job posted successfully!');
+      navigate('/employer/dashboard');
+    } catch (error) {
+      alert(error.response?.data?.detail || 'Failed to post job');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <Card className="p-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Post a New Job</h1>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="title">Job Title</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="company">Company</Label>
+              <Input
+                id="company"
+                value={formData.company}
+                onChange={(e) => setFormData({...formData, company: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({...formData, location: e.target.value})}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="salary_range">Salary Range</Label>
+              <Input
+                id="salary_range"
+                placeholder="e.g., $80,000 - $120,000"
+                value={formData.salary_range}
+                onChange={(e) => setFormData({...formData, salary_range: e.target.value})}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="description">Job Description</Label>
+            <Textarea
+              id="description"
+              rows={6}
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="requirements">Requirements</Label>
+            <Textarea
+              id="requirements"
+              rows={4}
+              value={formData.requirements}
+              onChange={(e) => setFormData({...formData, requirements: e.target.value})}
+              required
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="skills">Required Skills (comma-separated)</Label>
+              <Input
+                id="skills"
+                placeholder="e.g., Python, React, MongoDB"
+                value={formData.skills}
+                onChange={(e) => setFormData({...formData, skills: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="application_deadline">Application Deadline</Label>
+              <Input
+                id="application_deadline"
+                type="date"
+                value={formData.application_deadline}
+                onChange={(e) => setFormData({...formData, application_deadline: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <Button type="submit" disabled={loading} size="lg">
+              {loading ? 'Posting...' : 'Post Job'}
+            </Button>
+            <Button type="button" variant="outline" onClick={() => navigate('/employer/dashboard')}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
 // More components would go here...
 // For brevity, I'll add the main App component
 
