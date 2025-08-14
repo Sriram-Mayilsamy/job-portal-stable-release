@@ -360,16 +360,6 @@ const AuthPage = () => {
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
           </div>
-
-          {isLogin && (
-            <div className="mt-4 p-3 bg-gray-50 rounded text-sm">
-              <strong>Admin Login:</strong>
-              <br />
-              Email: admin
-              <br />
-              Password: admin123
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
@@ -494,6 +484,10 @@ const JobDetailPage = () => {
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+  })
 
   useEffect(() => {
     fetchJob()
@@ -501,11 +495,28 @@ const JobDetailPage = () => {
 
   const fetchJob = async () => {
     try {
-      const response = await axios.get(`/api/jobs/${id}`)
-      setJob(response.data)
+      console.log("Fetching job with ID:", id)
+      console.log("Full API URL:", `/api/jobs/${id}`)
+
+      const response = await axios.get(`/api/jobs/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      const jobData = response.data
+      console.log("Job data received:", jobData)
+      setJob(jobData)
+      setFormData((prev) => ({
+        ...prev,
+        fullName: user?.fullName || user?.full_name || "",
+        email: user?.email || "",
+      }))
+      setLoading(false)
     } catch (error) {
       console.error("Error fetching job:", error)
-    } finally {
+      console.error("Error response:", error.response?.data)
+      console.error("Error status:", error.response?.status)
+      setJob(null)
       setLoading(false)
     }
   }
@@ -583,7 +594,7 @@ const JobDetailPage = () => {
 
         <div className="mt-8 flex gap-4">
           {user && user.role === "jobseeker" ? (
-            <Button onClick={() => navigate(`/jobs/${job.jobId}/apply`)} size="lg">
+            <Button onClick={() => navigate(`/jobs/${job.jobId || job.id || id}/apply`)} size="lg">
               Apply Now
             </Button>
           ) : !user ? (
@@ -616,40 +627,27 @@ const JobApplyPage = () => {
   })
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [fetchJob, setFetchJob] = useState(async () => {})
 
   useEffect(() => {
     if (!user || user.role !== "jobseeker") {
       navigate("/auth")
       return
     }
-    fetchJob()
-  }, [id, user, navigate])
 
-  const fetchJob = async () => {
-    try {
-      console.log("Fetching job with ID:", id)
-      console.log("Full API URL:", `http://localhost:8002/api/employer/jobs/${id}`)
-
-      const response = await axios.get(`http://localhost:8002/api/employer/jobs/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      const jobData = response.data
-      console.log("Job data received:", jobData)
-      setJob(jobData)
-      setFormData((prev) => ({
-        ...prev,
-        fullName: user.fullName || user.full_name || "",
-        email: user.email || "",
-      }))
-    } catch (error) {
-      console.error("Error fetching job:", error)
-      console.error("Error response:", error.response?.data)
-      console.error("Error status:", error.response?.status)
-      setLoading(false)
+    const fetchJobData = async () => {
+      try {
+        const response = await axios.get(`/api/jobs/${id}`)
+        setJob(response.data)
+      } catch (error) {
+        console.error("Error fetching job:", error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }
+
+    fetchJobData()
+  }, [id, user, navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
